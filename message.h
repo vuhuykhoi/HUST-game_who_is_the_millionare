@@ -1,0 +1,86 @@
+#define MSG_LENGTH 200
+
+#define SEPARATOR_CHAR "#"
+
+typedef struct message{
+	int msg_type;
+	char value[MSG_LENGTH];
+}message;
+
+
+enum client_msg_type {
+	NONE,
+	LOG_IN_USER,
+	LOG_IN_PASS,
+	REGISTER_USER,
+	REGISTER_PASS,
+	SEARCH_USER,
+	LOG_OUT_USER,
+	
+	GET_IN_ROOM,
+	
+	GET_ROUND1_QUES,
+	ANSWER_ROUND1_QUES,
+	GET_ROUND1_RESULT,
+
+	GET_ROUND2_QUES,
+	ANSWER_ROUND2_QUES,
+	GET_ROUND2_RESULT,
+
+	GET_HIGH_SCORE,
+};
+
+enum server_msg_type{
+	VALID_REGISTER_USER,
+	INVALID_REGISTER_USER,
+	VALID_REGISTER_PASS,
+	REGISTER_SUCCESS,
+
+	INVALID_LOGIN_USER,
+	ACCOUNT_IS_BLOCKED,
+	VALID_LOGIN_USER,
+	INVALID_LOGIN_PASSWORD,
+	THREE_TIME_WRONG_PASSWORD,
+	VALID_LOGIN_PASSWORD,
+	LOGIN_SUCCESS,
+
+	LOGOUT_SUCCESS,
+	NOT_FOUND_ACCOUNT,
+	ACCOUNT_IS_NOT_LOG_IN,
+	END_SESSION,
+
+	INVALID_MESSAGE,
+	WRONG_ORDER,
+
+	NUM_PLAYER_IN_ROOM,
+	ROOM_IS_FULL,
+	USER_ALREADY_LOGIN,
+	
+	ROUND1_QUES,
+	ROUND1_ANSW,
+
+	ROUND2_QUES,
+	ROUND2_QUES_50_50,
+	ROUND2_ANSW,
+
+	ROUND2_PLAYER,
+	ROUND2_SCORE,
+	ROUND2_FINISH,
+
+	HELP_50_50_USED,
+
+	GET_OUT_ROOM,
+	GAME_OVER,
+
+	SCORE_BOARD,
+
+};
+
+
+//create new empty struct message 
+message newMessage();
+
+//parse message string to struct message.had two part:message type and message content
+message parseMessage(char *mgs);
+
+

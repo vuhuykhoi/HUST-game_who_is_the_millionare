@@ -1,0 +1,32 @@
+*1
+@Sở thú bị cháy, con gì chạy ra đầu tiên?
+#A.con chim|B.con rắn|C.con người|D.con tê giác
+$C
+*2
+@ Cha của Ly có 5 người con tên thứ Nhất, thứ Hai, thứ Ba, thứ Năm, hỏi tên của người con thứ 5 là gì?
+#A.Thứ 6|B.Ly|C.Út|D.Cả
+$B
+*3
+@ Bệnh gì bác sỹ bó tay?
+#A.HIV|B.Gãy tay|C.Siđa|D.Bệnh sĩ
+$B
+*4
+@Ở Việt Nam, rồng bay ở đâu và đáp ở đâu?
+#A. Hà Nội và Long An|B.Hà nội và Quảng Ninh|C.Thăng Long và Hạ long|D.Quảng Ninh và Long An
+$C
+*5
+@Con gì đập thì sống ,không đập thì chết
+#A. Con ma|B.Con chuột chũi|C.Con tim|D.Con mắt
+$C
+*6
+@Bốn chữ đi khắp một đời.Ai sinh ra cũng phải trải qua
+#A.Sinh Lão Bệnh Tử|B.Công Dung Ngôn Hạnh|C. Xuân Hạ Thu Đông|D.Môn Đăng Hộ Đối
+$A
+*7
+@Cái gì luôn đi đến mà không bao giờ đến nơi?
+#A.Cơn gió|B.Tình yêu|C.Không cái gì|D.Ngày mai
+$D
+*8
+@Cái gì mà đi thì nằm, đứng cũng nằm, nhưng nằm lại đứng?
+#A.Cái bàn|B.Bàn chân|C.Bàn tay|D.Cái ghế
+$B
