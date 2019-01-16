@@ -37,25 +37,46 @@ typedef struct question{
 }QUESTION;
 
 
+/*load list users , list questions
+ *initialize game variable global in file gamehelper.c
+ */
 int gameSetup();
+
+/*reset game varialbes to prepare to start new game*/
 int resetGameVariables();
 
+/*count number questions that store in file*/
 int getNumOfRound1Questions(FILE *file);
+
+/*read questions from file and save to array*/
 QUESTION* getQuestions(FILE* file);
 
+
 void printQuestions(QUESTION *listQues,int total);
+
+/*count score
+@params: question number
+@return: score
+*/
 int countScore(int ques_number);
 
-
+/*use to random 2 wrong answer*/
 int convertAnswerToNumber(char c);
+/* 
+@params: question
+@return :string of question and with 2 answer include correct answer
+*/
 char* removeTwoWrongAnswer(QUESTION ques);
 
-
+/*non repeating random question
+* the question that had random, be removed from list random question
+*/
 int deleteElmentFromArray(int *arr,int *arr_size,int pos);
 int randomQuestionNonRepeat(int *arr,int *arr_size);
 
 
 char *getCurrentTime();
+/*save player score to database*/
 int savePlayerScore(char* username,int score,char *time);
 
 void clearBuffer();

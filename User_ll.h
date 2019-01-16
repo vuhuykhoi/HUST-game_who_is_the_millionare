@@ -42,7 +42,29 @@ int isExistedNode(linkList *list,char *acc);
 //find node in list by value of node
 node* findNodeByValue(linkList *list,char *acc);
 
+/*
+get List User From File
+@params: file pointer
+@return: lisklist that a node is an user
+*/
 linkList* getListUserFromFile(FILE *file);
+
+
+/*
+check if user is existed ?
+@params: list user , username need to check
+@return: 0 is not existed , 1 is existed
+*/
 int isExistedUserName(linkList *list,char *username);
+/*
+check if password is correct ?
+@params: user , password need to check
+@return: 0 is false , 1 is true
+*/
 int isCorrectPassword(val account,char *input_pass);
+
+/*
+rewrite all users in linklist to file ?
+@params: linklist user,fname :file name to write
+*/
 void updateAccountToFile(linkList *list,char *fname);

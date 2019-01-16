@@ -262,20 +262,13 @@ int gameSetup(){
 	num_players_get_round1_ques = 0;
 	num_round1_ans = 0;
 	
-//	FILE *file = NULL ; 
 	FILE *ques_file = NULL;
-/*
-	if((file = fopen(account_file,"r+")) == NULL){
-		printf("ERROR:File can not be found!\n");
-		return 0;
-	}
-*/	
+
 	if((ques_file = fopen(round1_ques_file,"r+")) == NULL){
 		printf("ERROR:File can not be found!\n");
 		return 0;
 	}
 
-//	accList =  getListUserFromFile(file);
 	sqlite3** db = open_database();
 	// get user
 	char sql_get_user[] = "SELECT * FROM account;";
@@ -335,16 +328,7 @@ char *getCurrentTime(){
 }
 
 int savePlayerScore(char* username,int score,char *time){
-/*	
-	FILE *file = NULL;
-	if((file = fopen(filename,"a")) == NULL){
-		printf("ERROR:File can not be found!\n");
-		return 0;
-	}else{
-		fprintf(file,"%s|%d|%s",username,score,time);		
-	}
-	fclose(file);
-*/
+
 	char* scr;
 	sprintf(scr,"%d",score);
 	char* sql = (char*)malloc(MAX_STRING_LENGTH_SQL);
@@ -358,11 +342,7 @@ int savePlayerScore(char* username,int score,char *time){
 	strcat(sql, "');");
 	printf("%s\n",sql);	
 	insert_query(sql);
-//	if(insert_query(sql)) {
-//		printf("TEST_DATABASE: Success\n->\"%s\"\n", sql);
-//	} else {
-//		printf("TEST_DATABASE: Failed\n->\"%s\"\n", sql);	
-//		}		
+	
 	return 1;
 }
 
