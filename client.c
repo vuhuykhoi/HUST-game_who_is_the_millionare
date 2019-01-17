@@ -447,6 +447,7 @@ void printSubPlayingRoomRound2Screen(){
 int processMainPlayingRoomRound2Screen(){	
 	char c;
 	char ques_2_answer[500]="";
+	char old_quest[500]="";
 
 	
 	do{
@@ -504,7 +505,9 @@ int processMainPlayingRoomRound2Screen(){
 		
 		if(recv_message.msg_type == ROUND2_QUES){
 			//do{
+				strcpy(old_quest,recv_message.value);			
 				printMainPlayingRoomRound2Screen(recv_message.value);
+
 				litmittedTimeInput(buff,TIME_ANSWER_ROUND_2_QUES);
 
 				memset(buff_message,'\0',(strlen(buff_message)+1));
@@ -539,7 +542,8 @@ int processMainPlayingRoomRound2Screen(){
 			
 			while(recv_message.msg_type == HELP_50_50_USED){
 				printf("Help 50/50 had been used.");
-				printMainPlayingRoomRound2Screen5050(ques_2_answer);
+				//printMainPlayingRoomRound2Screen5050(ques_2_answer);
+				printMainPlayingRoomRound2Screen(old_quest);
 				litmittedTimeInput(buff,TIME_ANSWER_ROUND_2_QUES);
 
 				memset(buff_message,'\0',(strlen(buff_message)+1));

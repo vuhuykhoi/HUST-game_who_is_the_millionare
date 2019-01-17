@@ -494,8 +494,12 @@ int processData(int s,node** user, char *in, char *out){
 		 */
 		}else{
 			//status -> finish game
-			if(round2_ques_number < 3 ){
+			if(round2_ques_number <= 5 ){
 				round2_score = countScore(1);
+			}else if(round2_ques_number > 5 && round2_ques_number <= 10){
+				round2_score = countScore(5);
+			}else if(round2_ques_number > 10){
+				round2_score = countScore(10);
 			}
 			(*user)->val.sts = FINISHED_GAME;
 			savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
