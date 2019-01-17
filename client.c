@@ -525,6 +525,7 @@ int processMainPlayingRoomRound2Screen(){
 			if(recv_message.msg_type==ROUND2_QUES_50_50)
 			{
 				strcpy(ques_2_answer,recv_message.value);
+				strcpy(old_quest,ques_2_answer);
 				printMainPlayingRoomRound2Screen5050(recv_message.value);
 				litmittedTimeInput(buff,TIME_ANSWER_ROUND_2_QUES);
 

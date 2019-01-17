@@ -344,7 +344,7 @@ int processData(int s,node** user, char *in, char *out){
 			}
 		
 			return SEND_TO_ONE;
-		
+	
 		case LOG_OUT_USER:
 			if((*user)){
 				if((*user)->val.sts != NOT_LOG_IN){
@@ -357,77 +357,99 @@ int processData(int s,node** user, char *in, char *out){
 			return SEND_TO_ONE;
 
 		case GET_IN_ROOM:
-
-			if(num_of_player+1 <= NUM_FULL_ROOM){
-				num_of_player++;
-				sprintf(out,"%d%s%d",NUM_PLAYER_IN_ROOM,SEPARATOR_CHAR,num_of_player);	
-				return BROADCAST_PLAYER_IN_ROOM;
-			}else{
-				sprintf(out,"%d%s%d",ROOM_IS_FULL,SEPARATOR_CHAR,num_of_player);				
-				return SEND_TO_ONE;
+		if((*user)){
+			if((*user)->val.sts == IS_LOG_IN){
+				if(num_of_player+1 <= NUM_FULL_ROOM){
+					(*user)->val.sts = IS_ROUND1_PLAYER;
+					num_of_player++;
+					sprintf(out,"%d%s%d",NUM_PLAYER_IN_ROOM,SEPARATOR_CHAR,num_of_player);	
+					return BROADCAST_PLAYER_IN_ROOM;
+				}else{
+					sprintf(out,"%d%s%d",ROOM_IS_FULL,SEPARATOR_CHAR,num_of_player);				
+					return SEND_TO_ONE;
+				}
 			}
+		}
+		return BLOCK;		
 		
 
 		case GET_ROUND1_QUES:
-			/*Wait until all player in room request sever send round1 question*/
-			num_players_get_round1_ques++;
-			if(num_players_get_round1_ques < NUM_FULL_ROOM){
-				return BLOCK;
-			/*If all player sended request server send question*/
-			}else if(num_players_get_round1_ques == NUM_FULL_ROOM){
+		if((*user)){
+			if((*user)->val.sts == IS_ROUND1_PLAYER){
+				/*Wait until all player in room request sever send round1 question*/
+				num_players_get_round1_ques++;
+				if(num_players_get_round1_ques < NUM_FULL_ROOM){
+					return BLOCK;
+				/*If all player sended request server send question*/
+				}else if(num_players_get_round1_ques == NUM_FULL_ROOM){
 				
-   				srand((unsigned) time(&t));
-   				random_ques =  randomQuestionNonRepeat(arr_sended_ques,&arr_size);
-				sprintf(out,"%d%s%s\n%s\n%s\n%s\n%s",ROUND1_QUES,SEPARATOR_CHAR,
-					listQues[random_ques].ques,
-					listQues[random_ques].choices[0],
-					listQues[random_ques].choices[1],
-					listQues[random_ques].choices[2],
-					listQues[random_ques].choices[3]
-				);
-						
-				return BROADCAST_PLAYER_IN_ROOM;
+		   			srand((unsigned) time(&t));
+		   			random_ques =  randomQuestionNonRepeat(arr_sended_ques,&arr_size);
+					sprintf(out,"%d%s%s\n%s\n%s\n%s\n%s",ROUND1_QUES,SEPARATOR_CHAR,
+						listQues[random_ques].ques,
+						listQues[random_ques].choices[0],
+						listQues[random_ques].choices[1],
+						listQues[random_ques].choices[2],
+						listQues[random_ques].choices[3]
+					);
+								
+					return BROADCAST_PLAYER_IN_ROOM;
+				}
 			}
+		}
+		return BLOCK;
 			
 		case ANSWER_ROUND1_QUES:
-		/*set main player
-		 *the player answer the questions with correct answer firstly
-		 *set that player is main player
-		 */
-		if(!strcmp(recv_message.value,listQues[random_ques].answ)){
-			if(main_player[0] == '\0'){
-				strcpy(main_player,(*user)->val.acc);
+		if((*user)){
+			if((*user)->val.sts == IS_ROUND1_PLAYER){
+				/*set main player
+				 *the player answer the questions with correct answer firstly
+				 *set that player is main player
+				 */
+				if(!strcmp(recv_message.value,listQues[random_ques].answ)){
+					if(main_player[0] == '\0'){
+						strcpy(main_player,(*user)->val.acc);
+						(*user)->val.sts = IS_ROUND2_PLAYER;
+					}
+				}
+				/*Wait until all player in room request sever send round1 answer*/
+				num_round1_ans++;
+				if(num_round1_ans < NUM_FULL_ROOM){
+					return BLOCK;
+				/*If all player sended request server send answer*/
+				}else if(num_round1_ans == NUM_FULL_ROOM){
+					sprintf(out,"%d%s%s",ROUND1_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);		
+					return BROADCAST_PLAYER_IN_ROOM;
+				}
 			}
 		}
-		/*Wait until all player in room request sever send round1 answer*/
-		num_round1_ans++;
-		if(num_round1_ans < NUM_FULL_ROOM){
-			return BLOCK;
-		/*If all player sended request server send answer*/
-		}else if(num_round1_ans == NUM_FULL_ROOM){
-			sprintf(out,"%d%s%s",ROUND1_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);		
-			return BROADCAST_PLAYER_IN_ROOM;
-		}
+		return BLOCK;
 		
 		case GET_ROUND1_RESULT:
-		if(main_player[0] != '\0'){
-			/*Send result who is main player to all player in room*/
-			sprintf(out,"%d%s%s",ROUND2_PLAYER,SEPARATOR_CHAR,main_player);			
-		}else{
-			/*If no player pass round1 game over-> reset all game variables */
-			resetGameVariables();
-			sprintf(out,"%d%s%s",GAME_OVER,SEPARATOR_CHAR,"none");	
-
+		if((*user)){
+			if((*user)->val.sts == IS_ROUND1_PLAYER||(*user)->val.sts == IS_ROUND2_PLAYER){
+				if(main_player[0] != '\0'){
+					/*Send result who is main player to all player in room*/
+					sprintf(out,"%d%s%s",ROUND2_PLAYER,SEPARATOR_CHAR,main_player);			
+				}else{
+					/*If no player pass round1 game over-> reset all game variables */
+				resetGameVariables();
+				sprintf(out,"%d%s%s",GAME_OVER,SEPARATOR_CHAR,"none");	
+				}
+				return SEND_TO_ONE;
+			}
 		}
-		return SEND_TO_ONE;
+		return BLOCK;
 
 		case GET_ROUND2_QUES:
 		if((*user)->val.sts == FINISHED_GAME){
 			sprintf(out,"%d%s%s",ROUND2_FINISH,SEPARATOR_CHAR,"none");
-		/* if round2 question number = total round2 question ->
-		 * game continue until reached total round2 questions number
-		 */
-		}else if(round2_ques_number < TOTAL_ROUND2_QUES ){
+			return BROADCAST_PLAYER_IN_ROOM;
+		}else if((*user)->val.sts == IS_ROUND2_PLAYER){
+			/* if round2 question number = total round2 question ->
+		 	* game continue until reached total round2 questions number
+		 	*/
+			if(round2_ques_number < TOTAL_ROUND2_QUES ){
 			srand((unsigned) time(&t));
 			random_ques =  randomQuestionNonRepeat(arr_sended_ques,&arr_size);
 			round2_ques_number++;
@@ -439,93 +461,121 @@ int processData(int s,node** user, char *in, char *out){
 					listQues[random_ques].choices[2],
 					listQues[random_ques].choices[3]
 			);
-		/*if round2 question number = total round2 question -> game over*/
-		}else if(round2_ques_number == TOTAL_ROUND2_QUES){
-			(*user)->val.sts == FINISHED_GAME;
-			savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
-			resetGameVariables();
-			sprintf(out,"%d%s%s",ROUND2_FINISH,SEPARATOR_CHAR,"none");
+			/*if round2 question number = total round2 question -> game over*/
+			}else if(round2_ques_number == TOTAL_ROUND2_QUES){
+				(*user)->val.sts == FINISHED_GAME;
+				savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
+				resetGameVariables();
+				sprintf(out,"%d%s%s",ROUND2_FINISH,SEPARATOR_CHAR,"none");
+			}
+			return BROADCAST_PLAYER_IN_ROOM;
 		}
-		return BROADCAST_PLAYER_IN_ROOM;
-		
+		return BLOCK;
+
+
 		case ANSWER_ROUND2_QUES:
-		/*if main player select help stop game:
-		 *game over:
-		 *reset game variables
-		 *save player result
-		 */
-		if(!strcmp(recv_message.value,STOP_GAME)){
-			round2_score = countScore(round2_ques_number-1);
-			(*user)->val.sts = FINISHED_GAME;
+		if((*user)){
+			if((*user)->val.sts == IS_ROUND2_PLAYER){
+					/*if main player select help stop game:
+					 *game over:
+					 *reset game variables
+					 *save player result
+					 */
+				if(!strcmp(recv_message.value,STOP_GAME)){
+					round2_score = countScore(round2_ques_number-1);
+					(*user)->val.sts = FINISHED_GAME;
 
-			savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
-			resetGameVariables();
+					savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
+					resetGameVariables();
 
-			sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);
-		/*if main player select help 50/50 to remove 2 wrong answer:
-		 *server random 2 wrong answer and send question + answer to client again
-		 *set get_50_50_used = 1 to make sure user just only use 50/50 one time in this current game
-		 */		
-		}else if(!strcmp(recv_message.value,REMOVE_WRONG_ANSWER)){
-			if(help_50_50_used == 0){
-				sprintf(out,"%d%s%d: %s",ROUND2_QUES_50_50,SEPARATOR_CHAR,
-					round2_ques_number,
-					removeTwoWrongAnswer(listQues[random_ques])
-				);
-				help_50_50_used = 1;
-			/*if help 50/50 used send notification that 50/50 had been used to user*/
-			}else if(help_50_50_used == 1){
-				sprintf(out,"%d%s%s",HELP_50_50_USED,SEPARATOR_CHAR,"none"
-				);
+					sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);
+				/*if main player select help 50/50 to remove 2 wrong answer:
+				 *server random 2 wrong answer and send question + answer to client again
+				 *set get_50_50_used = 1 to make sure user just only use 50/50 one time in this current game
+				 */		
+				}else if(!strcmp(recv_message.value,REMOVE_WRONG_ANSWER)){
+					if(help_50_50_used == 0){
+						sprintf(out,"%d%s%d: %s",ROUND2_QUES_50_50,SEPARATOR_CHAR,
+							round2_ques_number,
+							removeTwoWrongAnswer(listQues[random_ques])
+						);
+						help_50_50_used = 1;
+					/*if help 50/50 used send notification that 50/50 had been used to user*/
+					}else if(help_50_50_used == 1){
+						sprintf(out,"%d%s%s",HELP_50_50_USED,SEPARATOR_CHAR,"none"
+						);
+					}
+				
+				/*if is correct answer:
+				 *count score
+				 *send answer to all player in room
+				*/
+				}else if(!strcmp(recv_message.value,listQues[random_ques].answ)){
+					round2_score = countScore(round2_ques_number);
+					sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);		
+				
+				/* if is wrong answer:
+				 * count score
+				 * save player score
+				 * game over: reset game variables
+				 */
+				}else{
+					//status -> finish game
+					if(round2_ques_number == 1){
+						round2_score = countScore(0);
+					
+					}else if(round2_ques_number >1 && round2_ques_number <= 5){
+						round2_score = countScore(1);
+					
+					}else if(round2_ques_number > 5 && round2_ques_number <= 10){
+						round2_score = countScore(5);
+					
+					}else if(round2_ques_number > 10){
+						round2_score = countScore(10);
+					}
+
+					(*user)->val.sts = FINISHED_GAME;
+					savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
+					resetGameVariables();
+					sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);		
+				}
+			return BROADCAST_PLAYER_IN_ROOM;
 			}
-		
-		/*if is correct answer:
-		 *count score
-		 *send answer to all player in room
-		*/
-		}else if(!strcmp(recv_message.value,listQues[random_ques].answ)){
-			round2_score = countScore(round2_ques_number);
-			sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);		
-		
-		/* if is wrong answer:
-		 * count score
-		 * save player score
-		 * game over: reset game variables
-		 */
-		}else{
-			//status -> finish game
-			if(round2_ques_number <= 5 ){
-				round2_score = countScore(1);
-			}else if(round2_ques_number > 5 && round2_ques_number <= 10){
-				round2_score = countScore(5);
-			}else if(round2_ques_number > 10){
-				round2_score = countScore(10);
-			}
-			(*user)->val.sts = FINISHED_GAME;
-			savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
-			resetGameVariables();
-			sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);		
 		}
-		return BROADCAST_PLAYER_IN_ROOM;
+		return BLOCK;
 
 		case GET_ROUND2_RESULT:
-		/*send main player score to all player in room*/
-		sprintf(out,"%d%s%d",ROUND2_SCORE,SEPARATOR_CHAR,round2_score);		
-		return BROADCAST_PLAYER_IN_ROOM;
+		if((*user)){
+			if((*user)->val.sts == IS_ROUND2_PLAYER ||(*user)->val.sts == FINISHED_GAME){
+				/*send main player score to all player in room*/
+				sprintf(out,"%d%s%d",ROUND2_SCORE,SEPARATOR_CHAR,round2_score);	
+				return BROADCAST_PLAYER_IN_ROOM;	
+			}
+		}
+		return BLOCK;
+		
 
-		case GET_OUT_ROOM:	
-		(*user)->val.sts = IS_LOG_IN;
+		case GET_OUT_ROOM:
+		if((*user)){
+			if((*user)->val.sts == IS_ROUND1_PLAYER || (*user)->val.sts == IS_ROUND2_PLAYER){
+				(*user)->val.sts = IS_LOG_IN;
+			}
+		}	
 		return BLOCK;
 		
 		case GET_HIGH_SCORE:
-		strcpy(sql, "");
-		strcpy(sql,"SELECT * FROM userscore ORDER BY score DESC limit 10;");
-		printf("%s\n",sql);
-		select_query(sql, on_get_score, &scoreinfo);
-		printf("%s\n",scoreinfo);
-		sprintf(out,"%d%s%s",SCORE_BOARD,SEPARATOR_CHAR,scoreinfo);
-		return SEND_TO_ONE;
-
+		if((*user)){
+			if((*user)->val.sts == IS_LOG_IN){
+				strcpy(sql, "");
+				strcpy(sql,"SELECT * FROM userscore ORDER BY score DESC limit 10;");
+				printf("%s\n",sql);
+				select_query(sql, on_get_score, &scoreinfo);
+				printf("%s\n",scoreinfo);
+				sprintf(out,"%d%s%s",SCORE_BOARD,SEPARATOR_CHAR,scoreinfo);
+				return SEND_TO_ONE;
+			}
+		}
+		return BLOCK;
 	}
 }
 
