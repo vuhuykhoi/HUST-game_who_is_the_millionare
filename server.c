@@ -486,9 +486,9 @@ int processData(int s,node** user, char *in, char *out){
 					(*user)->val.sts = FINISHED_GAME;
 
 					savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
-					resetGameVariables();
-
+				
 					sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);
+					resetGameVariables();
 				/*if main player select help 50/50 to remove 2 wrong answer:
 				 *server random 2 wrong answer and send question + answer to client again
 				 *set get_50_50_used = 1 to make sure user just only use 50/50 one time in this current game
@@ -536,8 +536,8 @@ int processData(int s,node** user, char *in, char *out){
 
 					(*user)->val.sts = FINISHED_GAME;
 					savePlayerScore((*user)->val.acc,round2_score,getCurrentTime());
-					resetGameVariables();
-					sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);		
+					sprintf(out,"%d%s%s",ROUND2_ANSW,SEPARATOR_CHAR,listQues[random_ques].answ);
+					resetGameVariables();		
 				}
 			return BROADCAST_PLAYER_IN_ROOM;
 			}
@@ -557,7 +557,9 @@ int processData(int s,node** user, char *in, char *out){
 
 		case GET_OUT_ROOM:
 		if((*user)){
-			if((*user)->val.sts == IS_ROUND1_PLAYER || (*user)->val.sts == IS_ROUND2_PLAYER){
+			if((*user)->val.sts == IS_ROUND1_PLAYER || 
+				(*user)->val.sts == IS_ROUND2_PLAYER ||
+				(*user)->val.sts == FINISHED_GAME){
 				(*user)->val.sts = IS_LOG_IN;
 			}
 		}	
