@@ -45,11 +45,11 @@ int gameSetup();
 /*reset game varialbes to prepare to start new game*/
 int resetGameVariables();
 
-/*count number questions that store in file*/
-int getNumOfRound1Questions(FILE *file);
+/*return number of question*/
+int getNumOfRound1Questions();
 
 /*read questions from file and save to array*/
-QUESTION* getQuestions(FILE* file);
+QUESTION* getQuestions();
 
 
 void printQuestions(QUESTION *listQues,int total);

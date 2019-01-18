@@ -35,33 +35,46 @@ static int on_get_row(void* NotUsed, int num_cols, char** row, char** cols) {
 	return 0;
 }	
 
-
-int getNumOfRound1Questions(FILE *file){
-	rewind(file);
-	char c;
-	int sum = 0;
-	do
-   	{
-      c = fgetc(file);
-      if( feof(file) )
-      {
-         break ;
-      }
-      if(c == '*'){
-      	sum++;
-      }
-   	}while(1);
-   return sum;
+/*numberOfQues return number of questions*/
+static int on_get_number_of_ques(void* numberOfQues, int num_cols, char** row, char** cols) {
+	char* number= (char*) numberOfQues;
+	strcpy(number,"");
+	strcpy(number,row[0]);
+	return 0;
 }
 
-QUESTION *getQuestions(FILE *file){
-	rewind(file);
-	int num_of_ques = getNumOfRound1Questions(file);
-	rewind(file);
+/*ques return the question and all choice and answer*/
+static int on_get_question(void* ques,int num_cols,char** row, char** cols)
+{
 
-	QUESTION *quetions = malloc(sizeof(QUESTION)*num_of_ques);
+	char*question=(char*)ques;
+	strcpy(question,"");
+	strcat(question,row[0]);
+	strcat(question,row[1]);
+	strcat(question,row[2]);
+	strcat(question,row[3]);
+	strcat(question,row[4]);
+	strcat(question,row[5]);
 
-	for(int i= 0 ;i< num_of_ques;i++){
+}
+int getNumOfRound1Questions(){
+	char numberOfQuestion[2]="";
+	sqlite3** db = open_database();
+	char sql_get_user[] = "SELECT id FROM question;";
+	select_query(sql_get_user, on_get_number_of_ques, &numberOfQuestion);
+	return atoi(numberOfQuestion);
+}
+
+QUESTION *getQuestions()
+{
+	char numberOfQuestion[2]="";
+	sqlite3** db = open_database();
+	char sql_get_user[] = "SELECT id FROM question;";
+	select_query(sql_get_user, on_get_number_of_ques, &numberOfQuestion);
+	//printf("%d\n",atoi(numberOfQuestion));
+	QUESTION *quetions = malloc(sizeof(QUESTION)*atoi(numberOfQuestion));
+
+	for(int i= 0 ;i< atoi(numberOfQuestion);i++){
 		quetions[i].ques = malloc(sizeof(char)*512);
 		for(int j=0 ;j<4;j++){
 			quetions[i].choices[j] = malloc(sizeof(char)*256);
@@ -69,65 +82,55 @@ QUESTION *getQuestions(FILE *file){
 		quetions[i].answ = malloc(sizeof(char)*16);
 	}
 
+	for(int i= 0 ;i< 16;i++)
+	{
 
-	int i = -1;
-	int j = 0; 
-	char c;
-	char *array[4];
-	char *p;
+			char ques[500]="";
+			char* id=(char*)malloc(sizeof(char));
+			sprintf(id,"%d",i+1);
+			char* sql = (char*)malloc(MAX_STRING_LENGTH_SQL);
+			strcpy(sql, "");
+			strcat(sql, "SELECT ques,choicea,choiceb,choicec,choiced,answ from QUESTION where id = ");
+			strcat(sql,id);
+			strcat(sql,";");
+			//printf("%s\n",sql);
+			select_query(sql, on_get_question, &ques);
+			//printf("%s\n",ques);
+			const char s[2] = "@";
+		    char *token;
+		   
+		    /* lay token dau tien */
+		    token = strtok(ques, s);
 
-	char *line = malloc(sizeof(char)*256);
-	do{
-      
-      	c = fgetc(file);
-      	if( feof(file) )
-      	{
-         	break ;
-      	}
-      	memset(line,'\0',(strlen(line)+1));
-      	switch(c){
-      		case NEW_QUESTION_CHAR:
-  			i++;
-      		break;
-      		
-      		case QUESTION_CHAR:
-      		if(fgets(line,256,file) != NULL ){
-				if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
-      			strcpy(quetions[i].ques,line);
-      		}
-      		
-      		break;
+		    //printf( "%s\n", token );
+		    strcpy(quetions[i].ques,token);
+		    
+		    token = strtok(NULL, s);
+		    //printf( "%s\n", token );
+		    strcpy(quetions[i].choices[0],token);
+		    
+		    token = strtok(NULL, s);
+		    //printf( "%s\n", token );
+		    strcpy(quetions[i].choices[1],token);
+		    
+		    token = strtok(NULL, s);
+		    //printf( "%s\n", token );
+		    strcpy(quetions[i].choices[2],token);
 
-      		case CHOICES_CHAR:
-      		if(fgets(line,256,file) != NULL ){
-				if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
-      			j = 0;
-				p = strtok (line,CHOICE_SEPERATE_CHAR);
-    			
-    			while (p != NULL)
-    			{
-        			array[j++] = p;
-        			p = strtok (NULL, CHOICE_SEPERATE_CHAR);
-    			}
+		    token = strtok(NULL, s);
+		    //printf( "%s\n", token );
+		    strcpy(quetions[i].choices[3],token);
 
-      		}
-      		for(int j=0 ;j<4;j++){			
-				strcpy(quetions[i].choices[j],array[j]);
-				
-			}
-      		break;
+		    token = strtok(NULL, s);
+		    //printf( "%s\n", token );
+		    strcpy(quetions[i].answ,token);	
+		    
 
-      		case ANSWER_CHAR:
-      		if(fgets(line,256,file) != NULL ){
-				if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
-      			strcpy(quetions[i].answ,line);
-      		}
-      		
-      		break;
-      		default:
-      		break;
-      	}
-   	}while(1);
+	}
+
+
+
+	close_database(db);
 	return quetions;
 }
 
@@ -262,20 +265,14 @@ int gameSetup(){
 	num_players_get_round1_ques = 0;
 	num_round1_ans = 0;
 	
-	FILE *ques_file = NULL;
-
-	if((ques_file = fopen(round1_ques_file,"r+")) == NULL){
-		printf("ERROR:File can not be found!\n");
-		return 0;
-	}
 
 	sqlite3** db = open_database();
 	// get user
 	char sql_get_user[] = "SELECT * FROM account;";
 	select_query(sql_get_user, on_get_row, 0);
 	
-	num_of_round1_question = getNumOfRound1Questions(ques_file);	
-	listQues = getQuestions(ques_file);
+	num_of_round1_question = getNumOfRound1Questions();	
+	listQues = getQuestions();
 
 	arr_sended_ques = malloc(sizeof(int)*num_of_round1_question);
 	arr_size = num_of_round1_question;
@@ -285,8 +282,7 @@ int gameSetup(){
 		arr_sended_ques[i] = i;
 	}
 
-//	fclose(file);
-	fclose(ques_file);
+
 	return 1;
 }
 
